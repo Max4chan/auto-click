@@ -1,5 +1,3 @@
-# auto-click
-
 -- AutoClicker otimizado e seguro para Roblox Studio
 local UserInputService = game:GetService("UserInputService")
 local VirtualUser = game:GetService("VirtualUser")
