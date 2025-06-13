@@ -1,17 +1,16 @@
--- AutoClicker otimizado e seguro para Roblox Studio
+-- AutoClicker para KRNL, Delta e similares
+
 local UserInputService = game:GetService("UserInputService")
-local VirtualUser = game:GetService("VirtualUser")
 local RunService = game:GetService("RunService")
 local Player = game.Players.LocalPlayer
-local Mouse = Player:GetMouse()
 
 local autoClick = false
 local clicks = 0
 local lastSecond = tick()
 local cps = 0
-local clickDelay = 0.05 -- 20 CPS, ajuste se quiser (não recomendo menos que isso!)
+local clickDelay = 0.05 -- 20 CPS
 
--- UI compacta e interativa
+-- UI compacta
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "AutoClickerGui"
 screenGui.Parent = Player:WaitForChild("PlayerGui")
@@ -34,25 +33,35 @@ local function updateLabel()
     label.BackgroundColor3 = autoClick and Color3.fromRGB(50, 120, 50) or Color3.fromRGB(30, 30, 30)
 end
 
--- Função autoclick
-local clickTask = nil
-local function doClicks()
-    while autoClick do
-        -- Clica na posição do mouse (VirtualUser funciona apenas em Roblox Studio/local)
-        VirtualUser:Button1Down(Vector2.new(Mouse.X, Mouse.Y), workspace.CurrentCamera.CFrame)
-        VirtualUser:Button1Up(Vector2.new(Mouse.X, Mouse.Y), workspace.CurrentCamera.CFrame)
-        clicks = clicks + 1
-        task.wait(clickDelay)
+-- Função universal para mouse1click
+local function safeClick()
+    if mouse1click then
+        mouse1click()
+    elseif syn and syn.mouse1click then
+        syn.mouse1click()
+    elseif mouse1press and mouse1release then
+        mouse1press()
+        mouse1release()
     end
 end
+
+-- Task única de autoclick
+task.spawn(function()
+    while true do
+        if autoClick then
+            safeClick()
+            clicks = clicks + 1
+            task.wait(clickDelay)
+        else
+            task.wait(0.1)
+        end
+    end
+end)
 
 -- Ativa/desativa clicando na UI
 label.MouseButton1Click:Connect(function()
     autoClick = not autoClick
     updateLabel()
-    if autoClick and not clickTask then
-        clickTask = task.spawn(doClicks)
-    end
 end)
 
 -- Ativa/desativa pela tecla G
@@ -60,9 +69,6 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if not gameProcessed and input.KeyCode == Enum.KeyCode.G then
         autoClick = not autoClick
         updateLabel()
-        if autoClick and not clickTask then
-            clickTask = task.spawn(doClicks)
-        end
     end
 end)
 
@@ -73,9 +79,5 @@ RunService.RenderStepped:Connect(function()
         clicks = 0
         lastSecond = tick()
         updateLabel()
-    end
-    -- Reseta a task se parar o autoclick
-    if not autoClick then
-        clickTask = nil
     end
 end)
