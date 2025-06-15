@@ -8,7 +8,7 @@ local autoClick = false
 local clicks = 0
 local lastSecond = tick()
 local cps = 0
-local clickDelay = 0.05 -- 20 CPS
+local clickDelay = 0.03 -- 20 CPS
 
 -- UI compacta
 local screenGui = Instance.new("ScreenGui")
